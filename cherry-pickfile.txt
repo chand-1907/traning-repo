@@ -6,3 +6,5 @@ stash check 1
 stash check 4
 
 push check main
+
+push check 2 main
