@@ -3,3 +3,4 @@ welcome commit 2
 welcome commit 3
 
 stash check 1
+stash check 4
