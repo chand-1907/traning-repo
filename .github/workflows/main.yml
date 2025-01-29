@@ -1,18 +1,29 @@
 ---
-name: sample CI
+name: Node.js CI
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 jobs:
   test:
     runs-on: ubuntu-latest
-  steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: node-setup
-      uses: actions/setup-node@v2
-      with:
-        node-version: "18"
-    - name: version-check
-      run: node --version
+    strategy:
+      matrix:
+        node-version:
+          - 12
+          - 14
+          - 16
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
