@@ -16,9 +16,5 @@ jobs:
         node-version: "18"
     - name: version-check
       run: node --version
-    - name: sending-email
-      uses: actions/email-notify@v1
-      with:
-        to: nawinkumarcoder@gmail.com
-        subject: "Deployment Status"
-        body: "Integration succeeded"
+    - name: test-variable
+      run: echo ${{ secrets.TEST_VAR }}
