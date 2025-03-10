@@ -35,16 +35,21 @@ jobs:
           echo "Created PR Number: $UAT_PR_NUMBER"
           
       - name: Set PR Numbers
-        run: echo "PR_NUMBERS=$QA_PR_NUMBER $UAT_PR_NUMBER" >> $GITHUB_ENV
-        
-      - name: Auto-Approve PRs
-        run: |
-          for PR in $PR_NUMBERS; do
-            echo "Approving PR #$PR"
-            gh pr review $PR --approve --body "Approved ✅ - Looks good to me!" --repo ${{ github.repository }}
-          done
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+        run: echo '[101, 102, 103]' > PR_NUMBERS.json
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PR numbers
+          path: PR_NUMBERS.json
+      # - name: Auto-Approve PRs
+      #   run: |
+      #     for PR in $PR_NUMBERS; do
+      #       echo "Approving PR #$PR"
+      #       gh pr review $PR --approve --body "Approved ✅ - Looks good to me!" --repo ${{ github.repository }}
+      #     done
+      #   env:
+      #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
       # - name: Auto-Approve PR
       #   uses: hmarr/auto-approve-action@v4
       #   with:
