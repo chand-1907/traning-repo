@@ -23,7 +23,7 @@ jobs:
           gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised."
           PR_NUMBER=${{ github.event.pull_request.number }}
           REPO=${{ github.repository }}
-
+          gh auth status
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $HUB_TOKEN" \
