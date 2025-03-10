@@ -25,7 +25,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          gh pr create --base QA --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised."
+          gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised."
+      - name: Auto-Approve PR
+        uses: peter-evans/approve-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 # name: Auto PR from Hotfix to UAT and QA
 
 # on:
