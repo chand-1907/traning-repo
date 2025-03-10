@@ -1,32 +1,56 @@
-name: Auto PR from Hotfix to UAT and QA
+name: Create Pull Request
 
 on:
-  pull_request:
-    types:
-      - opened
+  push:
     branches:
-      - main
+      - hotfix  # Trigger when changes are pushed to the `hotfix` branch
 
 jobs:
-  create-prs:
+  create-pr:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Get hotfix branch name
-        id: hotfix-branch
-        run: |
-          HOTFIX_BRANCH="${{ github.head_ref }}"
-          echo "Hotfix branch: $HOTFIX_BRANCH"
-          echo "::set-output name=hotfix_branch::$HOTFIX_BRANCH"
-
-      - name: Create PR to UAT
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          head: ${{ steps.hotfix-branch.outputs.hotfix_branch }}
-          base: uat
-          title: "Hotfix to UAT: ${{ steps.hotfix-branch.outputs.hotfix_branch }}"
-          body: "Automated PR from hotfix branch to UAT."
-          draft: false
+          token: ${{ secrets.HUB_TOKEN }}
+          head: hotfix  # Source branch
+          base: main    # Target branch
+          title: "Hotfix to Main: Automated PR"
+          body: "This is an automated pull request created by GitHub Actions."
+          draft: false  # Set to `true` if you want to create a draft PR
+
+# name: Auto PR from Hotfix to UAT and QA
+
+# on:
+#   pull_request:
+#     types:
+#       - opened
+#     branches:
+#       - main
+
+# jobs:
+#   create-prs:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Get hotfix branch name
+#         id: hotfix-branch
+#         run: |
+#           HOTFIX_BRANCH="${{ github.head_ref }}"
+#           echo "Hotfix branch: $HOTFIX_BRANCH"
+#           echo "::set-output name=hotfix_branch::$HOTFIX_BRANCH"
+
+#       - name: Create PR to UAT
+#         uses: peter-evans/create-pull-request@v4
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           head: ${{ steps.hotfix-branch.outputs.hotfix_branch }}
+#           base: uat
+#           title: "Hotfix to UAT: ${{ steps.hotfix-branch.outputs.hotfix_branch }}"
+#           body: "Automated PR from hotfix branch to UAT."
+#           draft: false
