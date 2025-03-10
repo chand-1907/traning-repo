@@ -1,7 +1,7 @@
 name: Create Pull Request to UAT and QA
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - reopened
@@ -12,6 +12,8 @@ on:
 jobs:
   create-pr:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
