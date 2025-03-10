@@ -27,9 +27,9 @@ jobs:
         run: |
           gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised."
       - name: Auto-Approve PR
-        uses: peter-evans/approve-pull-request@v3
+        uses: hmarr/auto-approve-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.inputs.pullRequestNumber }}
 # name: Auto PR from Hotfix to UAT and QA
 
 # on:
