@@ -1,4 +1,3 @@
----
 name: Auto PR from Hotfix to UAT & QA
 
 on:
@@ -6,41 +5,22 @@ on:
     types:
       - opened
       - reopened
+      - synchronize
     branches:
-      - main
+      - production
 
 jobs:
   create-prs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Create PR from hotfix to UAT
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.HUB_TOKEN }}
-          base: uat
-          branch: hotfix
-          title: "Auto PR: Hotfix -> UAT"
-          body: "This PR is automatically created when a PR from hotfix to production is raised."
-
-# name: sample CI
-# on:
-#   push:
-#     branches:
-#       - main
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: checkout
-#       uses: actions/checkout@v2
-#     - name: node-setup
-#       uses: actions/setup-node@v2
-#       with:
-#         node-version: "18"
-#     - name: version-check
-#       run: node --version
-#     - name: test-variable
-#       run: echo ${{ secrets.TEST_VAR }}
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+        run: |
+          gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised."
