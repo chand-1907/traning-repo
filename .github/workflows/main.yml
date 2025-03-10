@@ -44,7 +44,7 @@ jobs:
             gh pr review $PR --approve --repo ${{ github.repository }}
           done
         env:
-          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
       # - name: Auto-Approve PR
       #   uses: hmarr/auto-approve-action@v4
       #   with:
