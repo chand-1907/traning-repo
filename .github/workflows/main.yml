@@ -1,11 +1,9 @@
-name: Auto PR from Hotfix to UAT & QA
+name: Auto PR from Hotfix to UAT and QA
 
 on:
   pull_request:
     types:
       - opened
-      - reopened
-      - synchronize
     branches:
       - production
 
@@ -14,10 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Create PR from hotfix to UAT
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+      - name: Get hotfix branch name
+        id: hotfix-branch
         run: |
-          gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised."
+          HOTFIX_BRANCH="${{ github.head_ref }}"
+          echo "Hotfix branch: $HOTFIX_BRANCH"
+          echo "::set-output name=hotfix_branch::$HOTFIX_BRANCH"
+
+      - name: Create PR to UAT
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.HUB_TOKEN }}
+          head: ${{ steps.hotfix-branch.outputs.hotfix_branch }}
+          base: uat
+          title: "Hotfix to UAT: ${{ steps.hotfix-branch.outputs.hotfix_branch }}"
+          body: "Automated PR from hotfix branch to UAT."
