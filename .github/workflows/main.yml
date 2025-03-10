@@ -21,8 +21,7 @@ jobs:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
           gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised."
-        auto-approve:
-    
+
       - name: Create PR from hotfix to QA
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
