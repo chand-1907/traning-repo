@@ -1,4 +1,4 @@
-name: Create Pull Request to UAT and QA
+name: AUTOMATIC PR CREATION
 
 on:
   pull_request_target:
