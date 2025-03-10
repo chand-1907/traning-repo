@@ -24,8 +24,9 @@ jobs:
       - name: Create PR to UAT
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.HUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           head: ${{ steps.hotfix-branch.outputs.hotfix_branch }}
           base: uat
           title: "Hotfix to UAT: ${{ steps.hotfix-branch.outputs.hotfix_branch }}"
           body: "Automated PR from hotfix branch to UAT."
+          draft: false
