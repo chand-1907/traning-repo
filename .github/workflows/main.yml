@@ -21,8 +21,6 @@ jobs:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
           gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised."
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          REPO=${{ github.repository }}
           gh auth status
           
       - name: Create PR from hotfix to QA
@@ -30,7 +28,11 @@ jobs:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
           gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised."
-          gh pr review ${{ github.event.pull_request.number }} --approve --repo ${{ github.repository }}
+
+      - name: Auto approve
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.HUB_TOKEN }}
 # name: Auto PR from Hotfix to UAT and QA
 
 # on:
