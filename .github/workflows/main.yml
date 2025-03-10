@@ -13,15 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.HUB_TOKEN }}
-          head: hotfix  # Source branch
-          base: main    # Target branch
-          title: "Hotfix to Main: Automated PR"
-          body: "This is an automated pull request created by GitHub Actions."
-          draft: false
+      - name: Create Pull Request using GitHub API
+        env:
+          GITHUB_TOKEN: ${{ secrets.HUB_TOKEN }}  # Use the secret token
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $HUB_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/pulls \
+            -d '{
+              "title": "Hotfix to Main: Automated PR",
+              "head": "hotfix",
+              "base": "main",
+              "body": "This is an automated pull request created using the GitHub API."
+            }'
 # name: Auto PR from Hotfix to UAT and QA
 
 # on:
