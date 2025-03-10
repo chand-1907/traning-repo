@@ -41,7 +41,7 @@ jobs:
         run: |
           for PR in $PR_NUMBERS; do
             echo "Approving PR #$PR"
-            gh pr review $PR --approve --repo ${{ github.repository }}
+            gh pr review $PR --approve --body "Approved ✅ - Looks good to me!" --repo ${{ github.repository }}
           done
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
