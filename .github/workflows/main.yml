@@ -28,7 +28,13 @@ jobs:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
           gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised."
-  
+  auto-approve:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - uses: hmarr/auto-approve-action@v4
 # name: Auto PR from Hotfix to UAT and QA
 
 # on:
