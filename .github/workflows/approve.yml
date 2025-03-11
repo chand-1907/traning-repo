@@ -1,10 +1,10 @@
 name: automatic pr approval
 
 on:
-  workflow_run:
-    workflows: ["automatic pr creation"]
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: ["automatic pr creation"]
+  #   types:
+  #     - completed
 
 jobs:
   setup-matrix:
