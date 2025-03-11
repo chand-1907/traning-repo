@@ -8,23 +8,61 @@ on:
       - synchronize
     branches:
       - main
-
+      
 jobs:
-  create-pr:
+  determine-base-branches:
     runs-on: ubuntu-latest
+    outputs:
+      base_branches: ${{ steps.set-matrix.outputs.base_branches }}
+    steps:
+      - name: Set Matrix Based on Branch Type
+        id: set-matrix
+        run: |
+          if [[ "${{ github.ref }}" == refs/heads/hotfix-prod* ]]; then
+            echo "base_branches=[\"uat\", \"qa\"]" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/hotfix-uat* ]]; then
+            echo "base_branches=[\"qa\"]" >> $GITHUB_OUTPUT
+          else
+            echo "base_branches=[]" >> $GITHUB_OUTPUT
+          fi
+
+  create-pr:
+    needs: determine-base-branches
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3.10.1
         with:
           token: ${{ secrets.HUB_TOKEN }}
-          commit-message: Auto Pull Request
-          title: Your desired title
-          body: Auto-created Pull Request
+          commit-message: "Auto PR from ${{ github.ref }} to ${{ matrix.base }}"
+          title: "Automated PR from ${{ github.ref }} to ${{ matrix.base }}"
+          body: "This PR was created automatically targeting ${{ matrix.base }}."
           branch: ${{ github.ref }}
-          base: uat
+          base: ${{ matrix.base }}
+# jobs:
+#   create-pr:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Create Pull Request
+#         uses: peter-evans/create-pull-request@v3.10.1
+#         with:
+#           token: ${{ secrets.HUB_TOKEN }}
+#           commit-message: Auto Pull Request
+#           title: Your desired title
+#           body: Auto-created Pull Request
+#           branch: ${{ github.ref }}
+#           base: uat
 # jobs:
 #   create-pr:
 #     runs-on: ubuntu-latest
