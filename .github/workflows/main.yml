@@ -61,14 +61,15 @@ jobs:
         run: |
           PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
           PR_NUMBER=$(basename "$PR_URL")
-          echo "Created PR Number: $PR_NUMBER"
+          echo "PR_NUMBER=$PR_NUMBER"
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Auto Approve PR
-        if: success()
+        if: success() && env.PR_NUMBER != ''
         uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{ secrets.HUB_TOKEN }}
-          pull-request-number: $PR_NUMBER
-          review-message: "Automatic Approved - $PR_NUMBER"
+          pull-request-number: ${{ env.PR_NUMBER }}
+          review-message: "Automatic Approved"
       # - name: Leave a Comment on PR
       #   if: $PR_NUMBER != ''
       #   uses: mshick/add-pr-comment@v2
