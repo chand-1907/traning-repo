@@ -18,13 +18,15 @@ jobs:
       - name: Set Matrix Based on Branch Type
         id: set-matrix
         run: |
-          if [[ "${{ github.ref }}" == refs/heads/hotfix-prod* ]]; then
-            echo "base_branches=[\"uat\", \"qa\"]" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/heads/hotfix-uat* ]]; then
-            echo "base_branches=[\"qa\"]" >> $GITHUB_OUTPUT
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          if [[ "$BRANCH_NAME" == hotfix-prod* ]]; then
+            echo "base_branches=[\"uat\", \"qa\"]" >> "$GITHUB_ENV"
+          elif [[ "$BRANCH_NAME" == hotfix-uat* ]]; then
+            echo "base_branches=[\"qa\"]" >> "$GITHUB_ENV"
           else
-            echo "base_branches=[]" >> $GITHUB_OUTPUT
+            echo "base_branches=[]" >> "$GITHUB_ENV"
           fi
+          echo "base_branches=$base_branches" >> "$GITHUB_OUTPUT"
 
   create-pr:
     needs: determine-base-branches
