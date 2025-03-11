@@ -19,16 +19,13 @@ jobs:
         id: set-matrix
         run: |
           echo "${{ github.head_ref }}"
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          if [[ ${{ github.head_ref }} == hotfix-prod* ]]; then
-            echo 'base_branches=["uat", "qa"]' #>> "$GITHUB_ENV"
-            echo 'base_branches=["uat", "qa"]' #>> "$GITHUB_OUTPUT"
-          elif [[ ${{ github.head_ref }} == hotfix-uat* ]]; then
-            echo 'base_branches=["qa"]' #>> "$GITHUB_ENV"
-            echo 'base_branches=["qa"]' #>> "$GITHUB_OUTPUT"
+          if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
+            echo "base_branches=[\"uat\", \"qa\"]" #>> $GITHUB_OUTPUT
+          elif [[ "${{ github.head_ref }}" == hotfix-uat* ]]; then
+            echo "base_branches=[\"qa\"]" #>> $GITHUB_OUTPUT
           else
-            echo 'base_branches=[""]' #>> "$GITHUB_ENV"
-            echo 'base_branches=[""]' #>> "$GITHUB_OUTPUT"
+            echo "base_branches=[]" #>> $GITHUB_OUTPUT
+          fi
 
   create-pr:
     needs: determine-base-branches
