@@ -8,7 +8,7 @@ on:
       - synchronize
     branches:
       - main
-      
+      - uat
 jobs:
   determine-base-branches:
     runs-on: ubuntu-latest
@@ -21,7 +21,7 @@ jobs:
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
             echo "base_branches=[\"uat\", \"qa\"]" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.head_ref }}" == hotfix-uat* ]]; then
+          elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
             echo "base_branches=[\"qa\"]" >> $GITHUB_OUTPUT
           else
             echo "base_branches=[]" >> $GITHUB_OUTPUT
@@ -59,7 +59,24 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised."
+          PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
+          PR_NUMBER=$(basename "$PR_URL")
+          echo "PR_NUMBER=$PR_NUMBER"
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+      - name: Auto Approve PR
+        if: success() && env.PR_NUMBER != ''
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          pull-request-number: ${{ env.PR_NUMBER }}
+          review-message: "Automatic Approved"
+      # - name: Leave a Comment on PR
+      #   if: $PR_NUMBER != ''
+      #   uses: mshick/add-pr-comment@v2
+      #   with:
+      #     repo-token: ${{ secrets.HUB_TOKEN }}
+      #     pull-request-number: $PR_NUMBER
+      #     message: "Auto-approved this PR. ✅"
         # uses: peter-evans/create-pull-request@v3.10.1
         # with:
         #   token: ${{ secrets.HUB_TOKEN }}
