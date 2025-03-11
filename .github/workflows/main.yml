@@ -1,4 +1,4 @@
-name: AUTOMATIC PR CREATION
+name: automatic pr creation
 
 on:
   pull_request_target:
@@ -35,13 +35,13 @@ jobs:
           echo "Created PR Number: $UAT_PR_NUMBER"
           
       - name: Set PR Numbers
-        run: echo '[101, 102, 103]' > PR_NUMBERS.json
+        run: echo '[$QA_PR_NUMBER, $UAT_PR_NUMBER]' > pr_numbers.json
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PR numbers
-          path: PR_NUMBERS.json
+          name: pr numbers
+          path: pr_numbers.json
       # - name: Auto-Approve PRs
       #   run: |
       #     for PR in $PR_NUMBERS; do
