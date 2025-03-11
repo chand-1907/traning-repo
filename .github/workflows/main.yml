@@ -43,7 +43,21 @@ jobs:
           echo "${{ needs.determine-base-branches.outputs.base_branches }}"
           echo "${{ github.head_ref }}"
           echo "${{ matrix.base }}"
+      - name: Check for Changes
+        id: check-diff
+        run: |
+          git fetch origin
+          if git diff --quiet HEAD; then
+            echo "No changes detected. Skipping PR creation."
+            echo "changes_exist=false"
+            echo "changes_exist=false" >> $GITHUB_ENV
+          else
+            echo "Changes detected. Proceeding with PR creation."
+            echo "changes_exist=true"
+            echo "changes_exist=true" >> $GITHUB_ENV
+          fi
       - name: Create Pull Request
+        if: env.changes_exist == 'true'
         uses: peter-evans/create-pull-request@v3.10.1
         with:
           token: ${{ secrets.HUB_TOKEN }}
