@@ -25,7 +25,7 @@ jobs:
           QA_PR_URL=$(gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised.")
           QA_PR_NUMBER=$(basename "$QA_PR_URL")  # Extracts the PR number from the URL
           echo "Created PR Number: $QA_PR_NUMBER"
-          
+         
       - name: Create PR from hotfix to QA
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
