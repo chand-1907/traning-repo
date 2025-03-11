@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        pr_number: ${{ fromJson(env.MATRIX) }}    
+        pr_number: ${{ fromJson(vars.MATRIX) }}    
     steps:
       - name: Auto-Approve PR
         uses: hmarr/auto-approve-action@v4
