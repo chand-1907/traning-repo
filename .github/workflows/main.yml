@@ -68,13 +68,13 @@ jobs:
         with:
           token: ${{ secrets.HUB_TOKEN }}
           pull-request-number: $PR_NUMBER
-      - name: Leave a Comment on PR
-        if: $PR_NUMBER != ''
-        uses: mshick/add-pr-comment@v2
-        with:
-          repo-token: ${{ secrets.HUB_TOKEN }}
-          pull-request-number: $PR_NUMBER
-          message: "Auto-approved this PR. ✅"
+      # - name: Leave a Comment on PR
+      #   if: $PR_NUMBER != ''
+      #   uses: mshick/add-pr-comment@v2
+      #   with:
+      #     repo-token: ${{ secrets.HUB_TOKEN }}
+      #     pull-request-number: $PR_NUMBER
+      #     message: "Auto-approved this PR. ✅"
         # uses: peter-evans/create-pull-request@v3.10.1
         # with:
         #   token: ${{ secrets.HUB_TOKEN }}
