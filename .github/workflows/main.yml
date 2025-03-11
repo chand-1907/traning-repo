@@ -67,7 +67,7 @@ jobs:
         if: success() && env.PR_NUMBER != ''
         uses: hmarr/auto-approve-action@v4
         with:
-          github-token: ${{ secrets.HUB_TOKEN }}
+          github-token: ${{ secrets.BOT_TOKEN }}
           pull-request-number: ${{ env.PR_NUMBER }}
           review-message: "Automatic Approved"
       # - name: Leave a Comment on PR
