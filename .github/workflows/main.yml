@@ -56,14 +56,16 @@ jobs:
           fi
       - name: Create Pull Request
         if: env.changes_exist == 'true'
-        uses: peter-evans/create-pull-request@v3.10.1
-        with:
-          token: ${{ secrets.HUB_TOKEN }}
-          commit-message: "Auto PR from ${{ github.head_ref }} to ${{ matrix.base }}"
-          title: "Automated PR from ${{ github.head_ref }} to ${{ matrix.base }}"
-          body: "This PR was created automatically targeting ${{ matrix.base }}."
-          branch: ${{ github.head_ref }}
-          base: ${{ matrix.base }}
+        run: |
+          gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised."
+        # uses: peter-evans/create-pull-request@v3.10.1
+        # with:
+        #   token: ${{ secrets.HUB_TOKEN }}
+        #   commit-message: "Auto PR from ${{ github.head_ref }} to ${{ matrix.base }}"
+        #   title: "Automated PR from ${{ github.head_ref }} to ${{ matrix.base }}"
+        #   body: "This PR was created automatically targeting ${{ matrix.base }}."
+        #   branch: ${{ github.head_ref }}
+        #   base: ${{ matrix.base }}
 # jobs:
 #   create-pr:
 #     runs-on: ubuntu-latest
