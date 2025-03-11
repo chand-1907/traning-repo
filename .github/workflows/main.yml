@@ -56,6 +56,8 @@ jobs:
           fi
       - name: Create Pull Request
         if: env.changes_exist == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
           gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised."
         # uses: peter-evans/create-pull-request@v3.10.1
