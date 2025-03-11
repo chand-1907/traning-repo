@@ -1,33 +1,33 @@
-name: automatic pr approval
+# name: automatic pr approval
 
-on:
-  # workflow_run:
-  #   workflows: ["automatic pr creation"]
-  #   types:
-  #     - completed
+# on:
+#   # workflow_run:
+#   #   workflows: ["automatic pr creation"]
+#   #   types:
+#   #     - completed
 
-jobs:
-  setup-matrix:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download PR List
-        uses: actions/download-artifact@v4
-        with:
-          name: pr numbers
+# jobs:
+#   setup-matrix:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Download PR List
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: pr numbers
 
-      - name: Read PR List
-        id: load-matrix
-        run: echo "MATRIX=$(jq -c . < pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
+#       - name: Read PR List
+#         id: load-matrix
+#         run: echo "MATRIX=$(jq -c . < pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
         
-  auto-approve:
-    needs: setup-matrix
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        pr_number: ${{ fromJson(vars.MATRIX) }}    
-    steps:
-      - name: Auto-Approve PR
-        uses: hmarr/auto-approve-action@v4
-        with:
-          github-token: ${{ secrets.BOT_TOKEN }}
-          pull-request-number: ${{ matrix.pr_number }}
+#   auto-approve:
+#     needs: setup-matrix
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         pr_number: ${{ fromJson(vars.MATRIX) }}    
+#     steps:
+#       - name: Auto-Approve PR
+#         uses: hmarr/auto-approve-action@v4
+#         with:
+#           github-token: ${{ secrets.BOT_TOKEN }}
+#           pull-request-number: ${{ matrix.pr_number }}
