@@ -66,7 +66,7 @@ jobs:
         if: success()
         uses: hmarr/auto-approve-action@v4
         with:
-          github-toke: ${{ secrets.HUB_TOKEN }}
+          github-token: ${{ secrets.HUB_TOKEN }}
           pull-request-number: $PR_NUMBER
           review-message: "Automatic Approved - $PR_NUMBER"
       # - name: Leave a Comment on PR
