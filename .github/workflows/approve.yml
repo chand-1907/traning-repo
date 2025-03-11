@@ -1,8 +1,8 @@
-name: AUTOMATIC APPROVE FOR PR
+name: automatic pr approval
 
 on:
   workflow_run:
-    workflows: ["AUTOMATIC PR CREATION"]
+    workflows: ["automatic pr creation"]
     types:
       - completed
 
@@ -13,11 +13,11 @@ jobs:
       - name: Download PR List
         uses: actions/download-artifact@v4
         with:
-          name: PR numbers
+          name: pr numbers
 
       - name: Read PR List
         id: load-matrix
-        run: echo "MATRIX=$(cat PR_NUMBERS.json)" >> $GITHUB_ENV  # Static list of PR numbers
+        run: echo "MATRIX=$(cat pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
         
   auto-approve:
     needs: setup-matrix
