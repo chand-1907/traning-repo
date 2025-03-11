@@ -17,7 +17,7 @@ jobs:
 
       - name: Read PR List
         id: load-matrix
-        run: echo "MATRIX=$(cat pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
+        run: echo "MATRIX=$(jq -c . < pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
         
   auto-approve:
     needs: setup-matrix
