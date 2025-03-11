@@ -8,7 +8,7 @@ on:
       - synchronize
     branches:
       - main
-      
+      - uat
 jobs:
   determine-base-branches:
     runs-on: ubuntu-latest
