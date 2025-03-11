@@ -46,14 +46,12 @@ jobs:
       - name: Check for Changes
         id: check-diff
         run: |
-          git fetch origin
-          if git diff --quiet HEAD; then
+          git fetch origin ${{ matrix.base }}  # Fetch latest base branch
+          if git diff --quiet ${{ matrix.base }} ${{ github.head_ref }}; then
             echo "No changes detected. Skipping PR creation."
-            echo "changes_exist=false"
             echo "changes_exist=false" >> $GITHUB_ENV
           else
             echo "Changes detected. Proceeding with PR creation."
-            echo "changes_exist=true"
             echo "changes_exist=true" >> $GITHUB_ENV
           fi
       - name: Create Pull Request
