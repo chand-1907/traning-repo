@@ -12,36 +12,70 @@ on:
 jobs:
   create-pr:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Create PR from hotfix to UAT
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-        run: |
-          QA_PR_URL=$(gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised.")
-          QA_PR_NUMBER=$(basename "$QA_PR_URL")  # Extracts the PR number from the URL
-          echo "Created PR Number: $QA_PR_NUMBER"
-         
-      - name: Create PR from hotfix to QA
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-        run: |
-          UAT_PR_URL=$(gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised.")
-          UAT_PR_NUMBER=$(basename "$UAT_PR_URL")  # Extracts the PR number from the URL
-          echo "Created PR Number: $UAT_PR_NUMBER"
-          
-      - name: Set PR Numbers
-        run: echo '[$QA_PR_NUMBER, $UAT_PR_NUMBER]' > pr_numbers.json
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
         with:
-          name: pr numbers
-          path: pr_numbers.json
+          branch: hotfix
+          base: main
+          title: "Automated PR from feature-branch"
+          body: "This PR was created automatically by GitHub Actions."
+          token: ${{ secrets.HUB_TOKEN }}
+# jobs:
+#   create-pr:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       pull-requests: write
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Create PR from hotfix to UAT
+#         env:
+#           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+#         run: |
+#           QA_PR_URL=$(gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised.")
+#           QA_PR_NUMBER=$(basename "$QA_PR_URL")  # Extracts the PR number from the URL
+#           echo "Created PR Number: $QA_PR_NUMBER"
+         
+#       - name: Create PR from hotfix to QA
+#         env:
+#           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+#         run: |
+#           UAT_PR_URL=$(gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised.")
+#           UAT_PR_NUMBER=$(basename "$UAT_PR_URL")  # Extracts the PR number from the URL
+#           echo "Created PR Number: $UAT_PR_NUMBER"
+          
+#       - name: Set PR Numbers
+#         run: echo '[$QA_PR_NUMBER, $UAT_PR_NUMBER]' > pr_numbers.json
+
+#       - name: Upload Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: pr numbers
+#           path: pr_numbers.json
+          
+#       - name: Download PR List
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: pr numbers
+  
+#       - name: Read PR List
+#         id: load-matrix
+#         run: echo "MATRIX=$(jq -c . < pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
+          
+#     strategy:
+#         matrix:
+#           pr_number: ${{ fromJson(vars.MATRIX) }}    
+#         steps:
+#         - name: Auto-Approve PR
+#           uses: hmarr/auto-approve-action@v4
+#           with:
+#             github-token: ${{ secrets.BOT_TOKEN }}
+#             pull-request-number: ${{ matrix.pr_number }}
       # - name: Auto-Approve PRs
       #   run: |
       #     for PR in $PR_NUMBERS; do
