@@ -59,7 +59,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised."
+          PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
+          PR_NUMBER=$(basename "$PR_URL")
+          echo "Created PR Number: $PR_NUMBER"
+      - name: Auto Approve PR
+        if: success()
+        uses: hmarr/auto-approve-action@v4
+        with:
+          token: ${{ secrets.HUB_TOKEN }}
+          pull-request-number: $PR_NUMBER
+      - name: Leave a Comment on PR
+        if: $PR_NUMBER != ''
+        uses: mshick/add-pr-comment@v2
+        with:
+          repo-token: ${{ secrets.HUB_TOKEN }}
+          pull-request-number: $PR_NUMBER
+          message: "Auto-approved this PR. ✅"
         # uses: peter-evans/create-pull-request@v3.10.1
         # with:
         #   token: ${{ secrets.HUB_TOKEN }}
