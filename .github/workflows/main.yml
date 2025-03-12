@@ -2,9 +2,7 @@ name: automatic pr creation
 on:
   pull_request_target:
     types:
-      - opened
-      - reopened
-      - synchronize
+      - closed
     branches:
       - main
 
