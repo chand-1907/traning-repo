@@ -64,7 +64,7 @@ jobs:
           PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
           PR_NUMBER=$(basename "$PR_URL")
           echo "PR_URL=$PR_URL"
-          echo "PR_URL=$PR_URL" >> $GITHUBENV
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "PR_NUMBER=$PR_NUMBER"
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Auto Approve PR
