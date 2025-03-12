@@ -63,6 +63,8 @@ jobs:
         run: |
           PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
           PR_NUMBER=$(basename "$PR_URL")
+          echo "PR_URL=$PR_URL"
+          echo "PR_URL=$PR_URL" >> $GITHUBENV
           echo "PR_NUMBER=$PR_NUMBER"
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Auto Approve PR
@@ -72,6 +74,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pull-request-number: ${{ env.PR_NUMBER }}
           review-message: "Automatic Approved"
+      - name: Auto Merge PR
+        if: github.event.review.state == 'approved'
+        run: gh pr merge "$PR_URL" --auto --admin --squash || echo "auto merge failed, need manual review and merge"
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+          PR_URL: ${{ env.PR_URL }}
       # - name: Leave a Comment on PR
       #   if: $PR_NUMBER != ''
       #   uses: mshick/add-pr-comment@v2
