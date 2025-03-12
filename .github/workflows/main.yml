@@ -75,8 +75,10 @@ jobs:
           pull-request-number: ${{ env.PR_NUMBER }}
           review-message: "Automatic Approved"
       - name: Auto Merge PR
-        if: github.event.review.state == 'approved'
-        run: gh pr merge "$PR_URL" --auto --admin --squash || echo "auto merge failed, need manual review and merge"
+        #if: github.event.review.state == 'approved'
+        run: |
+          gh pr merge "$PR_URL" --auto --admin --squash || echo "auto merge failed, need manual review and merge"
+          echo "${{ github.event.review.state }}"
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
           PR_URL: ${{ env.PR_URL }}
