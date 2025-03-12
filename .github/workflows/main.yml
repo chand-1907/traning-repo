@@ -77,7 +77,7 @@ jobs:
       - name: Auto Merge PR
         #if: github.event.review.state == 'approved'
         run: |
-          gh pr merge "$PR_URL" --auto --admin --squash || echo "auto merge failed, need manual review and merge"
+          gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
           echo "${{ github.event.review.state }}"
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
