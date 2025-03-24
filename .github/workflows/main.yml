@@ -21,20 +21,20 @@ jobs:
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-            echo "base_branches=[{\"source\":\"main\",\"target\":\"uat\"},{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_OUTPUT
+            echo "base_branches=[{\"source\":\"main\",\"target\":\"uat\"},{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_ENV
           elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-            echo "base_branches=[{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_OUTPUT
+            echo "base_branches=[{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_ENV
           else
-            echo "base_branches=[]" >> $GITHUB_OUTPUT
+            echo "base_branches=[]" >> $GITHUB_ENV
           fi
 
   create-pr:
     if: github.event.pull_request.merged == true
     needs: determine-base-branches
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
+    # strategy:
+    #   matrix:
+    #     base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,8 +42,8 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Check the values
         run: |
-          echo '"${{ needs.determine-base-branches.outputs.base_branches }}"' | jq -c '.[]'
-          echo "${{ needs.determine-base-branches.outputs.base_branches }}"
+          echo $base_branches | jq -c '.[]'
+          echo $base_branches
           echo "${{ github.head_ref }}"
           echo "${{ github.base_ref }}"
           echo "${{ matrix.base }}"
@@ -63,7 +63,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for row in $(echo "${{ needs.determine-base-branches.outputs.base_branches }}" | jq -c '.[]'); do
+          for row in $(echo $base_branches | jq -c '.[]'); do
             echo $row
             SRC=$(echo $row | jq -r '.source')
             echo $SRC
