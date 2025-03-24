@@ -73,15 +73,16 @@ jobs:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
           for mapping in ${{ env.base_branches }}; do
-            SRC=$(echo $mapping | cut -d ':' -f 1)
-            TGT=$(echo $mapping | cut -d ':' -f 2)
-            echo "Processing PR from $SRC to $TGT"
-            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
-            PR_NUMBER=$(basename "$PR_URL")
-            echo "PR_URL=$PR_URL"
-            echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-            echo "PR_NUMBER=$PR_NUMBER"
-            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+            echo $mapping
+            # SRC=$(echo $mapping | cut -d ':' -f 1)
+            # TGT=$(echo $mapping | cut -d ':' -f 2)
+            # echo "Processing PR from $SRC to $TGT"
+            #PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
+            #PR_NUMBER=$(basename "$PR_URL")
+            # echo "PR_URL=$PR_URL"
+            # echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+            # echo "PR_NUMBER=$PR_NUMBER"
+            # echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
           done
       # - name: Auto Approve PR
       #   if: success() && env.PR_NUMBER != ''
