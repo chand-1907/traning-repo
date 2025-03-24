@@ -11,32 +11,11 @@ permissions:
   pull-requests: write
   
 jobs:
-  # determine-base-branches:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     base_branches: ${{ steps.set-matrix.outputs.base_branches }}
-  #   steps:
-  #     - name: Set Matrix Based on Branch Type
-  #       id: set-matrix
-  #       run: |
-  #         echo "${{ github.head_ref }}"
-  #         if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-  #           echo "base_branches=[{\"source\":\"main\",\"target\":\"uat\"},{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_ENV
-  #         elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-  #           echo "base_branches=[{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_ENV
-  #         else
-  #           echo "base_branches=[]" >> $GITHUB_ENV
-  #         fi
-
   create-pr:
     if: github.event.pull_request.merged == true
-    #needs: determine-base-branches
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
     steps:
-      - name: Set Matrix Based on Branch Type
+      - name: Set Base Branches
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
@@ -77,12 +56,12 @@ jobs:
             TGT=$(echo "$row" | jq -r '.target')
 
             echo "Processing PR from $SRC to $TGT"
-            #PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
-            #PR_NUMBER=$(basename "$PR_URL")
-            # echo "PR_URL=$PR_URL"
-            # echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-            # echo "PR_NUMBER=$PR_NUMBER"
-            # echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
+            PR_NUMBER=$(basename "$PR_URL")
+            echo "PR_URL=$PR_URL"
+            echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+            echo "PR_NUMBER=$PR_NUMBER"
+            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
           done
       # - name: Auto Approve PR
       #   if: success() && env.PR_NUMBER != ''
