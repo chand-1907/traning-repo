@@ -1,16 +1,4 @@
 
-welcome commit 2
-welcome commit 3
-
-stash check 1
-stash check 4
-
-push check main
-
-push check 2 main
-
-diff testing
-
 
 test - 1
 test - 2
