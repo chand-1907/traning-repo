@@ -56,7 +56,7 @@ jobs:
             TGT=$(echo "$row" | jq -r '.target')
 
             echo "Processing PR from $SRC to $TGT"
-            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
+            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
             PR_NUMBER=$(basename "$PR_URL")
             echo "PR_URL=$PR_URL"
             echo "PR_URL=$PR_URL" >> $GITHUB_ENV
