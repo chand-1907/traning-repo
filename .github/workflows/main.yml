@@ -42,6 +42,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Check the values
         run: |
+          echo "${{ needs.determine-base-branches.outputs.base_branches }}" | jq -c '.[]'
           echo "${{ needs.determine-base-branches.outputs.base_branches }}"
           echo "${{ github.head_ref }}"
           echo "${{ github.base_ref }}"
