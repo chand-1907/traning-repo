@@ -21,9 +21,9 @@ jobs:
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-            echo "base_branches='"[{\"source\":\"main\",\"target\":\"uat\"},{\"source\":\"uat\",\"target\":\"qa\"}]"'" >> $GITHUB_OUTPUT
+            echo "base_branches=[{\"source\":\"main\",\"target\":\"uat\"},{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_OUTPUT
           elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-            echo "base_branches='"[{\"source\":\"uat\",\"target\":\"qa\"}]"'" >> $GITHUB_OUTPUT
+            echo "base_branches=[{\"source\":\"uat\",\"target\":\"qa\"}]" >> $GITHUB_OUTPUT
           else
             echo "base_branches=[]" >> $GITHUB_OUTPUT
           fi
@@ -42,7 +42,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Check the values
         run: |
-          echo "${{ needs.determine-base-branches.outputs.base_branches }}" | jq -c '.[]'
+          echo '"${{ needs.determine-base-branches.outputs.base_branches }}"' | jq -c '.[]'
           echo "${{ needs.determine-base-branches.outputs.base_branches }}"
           echo "${{ github.head_ref }}"
           echo "${{ github.base_ref }}"
