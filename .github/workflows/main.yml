@@ -72,7 +72,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for row in $(echo "${{ env.base_branches }}" | jq -c '.[]'); do
+          for row in $(echo ${{ env.base_branches }} | jq -c '.[]'); do
             SRC=$(echo $row | jq -r '.source')
             TGT=$(echo $row | jq -r '.target')
 
