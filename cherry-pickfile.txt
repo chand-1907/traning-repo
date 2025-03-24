@@ -10,21 +10,6 @@ push check main
 push check 2 main
 
 diff testing
-
-test - 2
-
-welcome commit 1
-welcome commit 2
-welcome commit 3
-
-stash check 1
-stash check 4
-
-push check main
-
-push check 2 main
-
-diff testing
 welcome commit 1
 welcome commit 2
 welcome commit 3
