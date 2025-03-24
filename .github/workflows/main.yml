@@ -71,6 +71,7 @@ jobs:
             echo "PR_URL=$PR_URL" >> $GITHUB_ENV
             echo "PR_NUMBER=$PR_NUMBER"
             echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          done
       # - name: Auto Approve PR
       #   if: success() && env.PR_NUMBER != ''
       #   uses: hmarr/auto-approve-action@v4
