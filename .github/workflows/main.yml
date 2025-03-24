@@ -40,11 +40,11 @@ jobs:
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-            echo "base_branches='main:uat uat:qa'" >> $GITHUB_ENV
+            echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-            echo "base_branches='uat:qa'" >> $GITHUB_ENV
+            echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           else
-            echo "base_branches=()" >> $GITHUB_ENV
+            echo "base_branches=[]" >> $GITHUB_ENV
           fi
       - name: Checkout code
         uses: actions/checkout@v4
@@ -72,11 +72,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for mapping in ${{ env.base_branches }}; do
-            echo $mapping
-            # SRC=$(echo $mapping | cut -d ':' -f 1)
-            # TGT=$(echo $mapping | cut -d ':' -f 2)
-            # echo "Processing PR from $SRC to $TGT"
+          for row in $(echo "${{ env.base_branches }}" | jq -c '.[]'); do
+            SRC=$(echo $row | jq -r '.source')
+            TGT=$(echo $row | jq -r '.target')
+
+            echo "Processing PR from $SRC to $TGT"
             #PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
             #PR_NUMBER=$(basename "$PR_URL")
             # echo "PR_URL=$PR_URL"
