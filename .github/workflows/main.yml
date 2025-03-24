@@ -42,8 +42,8 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Check the values
         run: |
-          echo $base_branches | jq -c '.[]'
-          echo $base_branches
+          echo ${{ env.base_branches }} | jq -c '.[]'
+          echo ${{ env.base_branches }}
           echo "${{ github.head_ref }}"
           echo "${{ github.base_ref }}"
           echo "${{ matrix.base }}"
@@ -63,7 +63,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for row in $(echo $base_branches | jq -c '.[]'); do
+          for row in $(echo ${{ env.base_branches }} | jq -c '.[]'); do
             echo $row
             SRC=$(echo $row | jq -r '.source')
             echo $SRC
