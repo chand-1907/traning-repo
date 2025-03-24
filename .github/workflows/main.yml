@@ -72,9 +72,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for row in $(echo ${{ env.base_branches }} | jq -c '.[]'); do
-            SRC=$(echo $row | jq -r '.source')
-            TGT=$(echo $row | jq -r '.target')
+          for row in $(echo '${{ env.base_branches }}' | jq -c '.[]'); do
+            SRC=$(echo "$row" | jq -r '.source')
+            TGT=$(echo "$row" | jq -r '.target')
 
             echo "Processing PR from $SRC to $TGT"
             #PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $TGT → $SRC" --body "Automatically created when a PR from hotfix to production is raised.")
