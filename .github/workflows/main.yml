@@ -55,20 +55,20 @@ jobs:
             TGT=$(echo "$row" | jq -r '.target')
 
             echo "Processing PR from $SRC to $TGT"
-            # PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
-            # PR_NUMBER=$(basename "$PR_URL")
-            # echo "PR_URL=$PR_URL"
-            # echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-            # echo "PR_NUMBER=$PR_NUMBER"
-            # echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SR → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
+            PR_NUMBER=$(basename "$PR_URL")
+            echo "PR_URL=$PR_URL"
+            echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+            echo "PR_NUMBER=$PR_NUMBER"
+            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
           done
-      # - name: Auto Approve PR
-      #   if: success() && env.PR_NUMBER != ''
-      #   uses: hmarr/auto-approve-action@v4
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     pull-request-number: ${{ env.PR_NUMBER }}
-      #     review-message: "Automatic Approved"
+      - name: Auto Approve PR
+        if: success() && env.PR_NUMBER != ''
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ env.PR_NUMBER }}
+          review-message: "Automatic Approved"
       # - name: Auto Merge PR
       #   #if: github.event.review.state == 'approved'
       #   run: |
