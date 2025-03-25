@@ -31,10 +31,10 @@ jobs:
             TGT=$(echo "$row" | jq -r '.target')
             echo "Processing PR from $SRC to $TGT"
             PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
-            PR_APPROVAL=$(gh pr review "$PR_URL" --approve)
             PR_MERGE=$(gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge")
           done
       # - name: Check the values
+      #PR_APPROVAL=$(gh pr review "$PR_URL" --approve)
       #   run: |
       #     echo "${{ env.base_branches }}"
       #     echo "${{ github.head_ref }}"
