@@ -15,7 +15,7 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Set Base Branches
+      - name: trigger the respective workflows
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
