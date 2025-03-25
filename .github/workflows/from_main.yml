@@ -14,8 +14,14 @@ permissions:
 jobs:
   create:
     runs-on: ubuntu-latest
-    env:
-      base_names: '[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]'
+    strategy:
+      matrix:
+        config: [
+          { source: "main", target: "uat" },
+          { source: "uat", target: "qa" }
+        ]
+    # env:
+    #   base_names: '[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,16 +32,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for row in $(echo '${{ env.base_names }}' | jq -c '.[]'); do
-            SRC=$(echo "$row" | jq -r '.source')
-            TGT=$(echo "$row" | jq -r '.target')
-            echo "Processing PR from $SRC to $TGT"
-            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
-            PR_MERGE=$(gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge")
-          done
-      # - name: Check the values
-      #PR_APPROVAL=$(gh pr review "$PR_URL" --approve)
-      #   run: |
-      #     echo "${{ env.base_branches }}"
-      #     echo "${{ github.head_ref }}"
-      #     echo "${{ github.base_ref }}"
+          PR_URL=$(gh pr create --base ${{ matrix.config.target }} --head ${{ matrix.config.source }} --title "Auto PR: ${{ matrix.config.source }} → ${{ matrix.config.target }}" --body "Automatically created when a PR from hotfix to production is raised.")
+          PR_NUMBER=$(basename "$PR_URL")
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+      - name: Auto Approve PR
+        if: success() && env.PR_NUMBER != ''
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ env.PR_NUMBER }}
+          review-message: "Automatic Approved"
+      - name: Auto Merge PR
+        if: github.event.review.state == 'approved'
+        run: |
+          gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
+          echo "${{ github.event.review.state }}"
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+          PR_URL: ${{ env.PR_URL }}
