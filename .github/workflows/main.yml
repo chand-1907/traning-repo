@@ -11,30 +11,40 @@ permissions:
   pull-requests: write
   
 jobs:
-  create-pr:
-    if: github.event.pull_request.merged == true
+  determine-base-branches:
     runs-on: ubuntu-latest
+    outputs:
+      base_branches: ${{ steps.set-matrix.outputs.base_branches }}
     steps:
-      - name: Set Base Branches
+      - name: Set Matrix Based on Branch Type
+        id: set-matrix
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-            echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
+            echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_OUTPUT
           elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-            echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
+            echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_OUTPUT
           else
-            echo "base_branches=[]" >> $GITHUB_ENV
+            echo 'base_branches=[]' >> $GITHUB_OUTPUT
           fi
+
+  create-pr:
+    if: github.event.pull_request.merged == true
+    needs: determine-base-branches
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.base_ref }}
       - name: Check the values
         run: |
-          echo "${{ env.base_branches }}"
+          echo "${{ needs.determine-base-branches.outputs.base_branches }}"
           echo "${{ github.head_ref }}"
           echo "${{ github.base_ref }}"
-          echo "${{ matrix.base }}"
       # - name: Check for Changes
       #   id: check-diff
       #   run: |
@@ -46,23 +56,17 @@ jobs:
       #       echo "Changes detected. Proceeding with PR creation."
       #       echo "changes_exist=true" >> $GITHUB_ENV
       #     fi
-      - name: Create Pull Request
-        #if: env.changes_exist == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-        run: |
-          for row in $(echo '${{ env.base_branches }}' | jq -c '.[]'); do
-            SRC=$(echo "$row" | jq -r '.source')
-            TGT=$(echo "$row" | jq -r '.target')
-
-            echo "Processing PR from $SRC to $TGT"
-            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
-            PR_NUMBER=$(basename "$PR_URL")
-            echo "PR_URL=$PR_URL"
-            echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-            echo "PR_NUMBER=$PR_NUMBER"
-            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          done
+      # - name: Create Pull Request
+      #   if: env.changes_exist == 'true'
+      #   env:
+      #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+      #   run: |
+      #     PR_URL=$(gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised.")
+      #     PR_NUMBER=$(basename "$PR_URL")
+      #     echo "PR_URL=$PR_URL"
+      #     echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+      #     echo "PR_NUMBER=$PR_NUMBER"
+      #     echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       # - name: Auto Approve PR
       #   if: success() && env.PR_NUMBER != ''
       #   uses: hmarr/auto-approve-action@v4
@@ -78,200 +82,3 @@ jobs:
       #   env:
       #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
       #     PR_URL: ${{ env.PR_URL }}
-      # - name: Leave a Comment on PR
-      #   if: $PR_NUMBER != ''
-      #   uses: mshick/add-pr-comment@v2
-      #   with:
-      #     repo-token: ${{ secrets.HUB_TOKEN }}
-      #     pull-request-number: $PR_NUMBER
-      #     message: "Auto-approved this PR. ✅"
-        # uses: peter-evans/create-pull-request@v3.10.1
-        # with:
-        #   token: ${{ secrets.HUB_TOKEN }}
-        #   commit-message: "Auto PR from ${{ github.head_ref }} to ${{ matrix.base }}"
-        #   title: "Automated PR from ${{ github.head_ref }} to ${{ matrix.base }}"
-        #   body: "This PR was created automatically targeting ${{ matrix.base }}."
-        #   branch: ${{ github.head_ref }}
-        #   base: ${{ matrix.base }}
-# on:
-#   pull_request_target:
-#     types:
-#       - opened
-#       - reopened
-#       - synchronize
-#     branches:
-#       - main
-#       - uat
-      
-# jobs:
-#   determine-base-branches:
-#     runs-on: ubuntu-latest
-#     outputs:
-#       base_branches: ${{ steps.set-matrix.outputs.base_branches }}
-#     steps:
-#       - name: Set Matrix Based on Branch Type
-#         id: set-matrix
-#         run: |
-#           echo "${{ github.head_ref }}"
-#           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-#             echo "base_branches=[\"uat\", \"qa\"]" >> $GITHUB_OUTPUT
-#           elif [[ "${{ github.head_ref }}" == hotfix-uat* ]]; then
-#             echo "base_branches=[\"qa\"]" >> $GITHUB_OUTPUT
-#           else
-#             echo "base_branches=[]" >> $GITHUB_OUTPUT
-#           fi
-
-#   create-pr:
-#     needs: determine-base-branches
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-#         with:
-#           ref: ${{ github.head_ref }}
-#       - name: Check the values
-#         run: |
-#           echo "${{ needs.determine-base-branches.outputs.base_branches }}"
-#           echo "${{ github.head_ref }}"
-#           echo "${{ matrix.base }}"
-#       - name: Check for Changes
-#         id: check-diff
-#         run: |
-#           git fetch origin ${{ matrix.base }}  # Fetch latest base branch
-#           if git diff --quiet ${{ matrix.base }} ${{ github.head_ref }}; then
-#             echo "No changes detected. Skipping PR creation."
-#             echo "changes_exist=false" >> $GITHUB_ENV
-#           else
-#             echo "Changes detected. Proceeding with PR creation."
-#             echo "changes_exist=true" >> $GITHUB_ENV
-#           fi
-#       - name: Create Pull Request
-#         if: env.changes_exist == 'true'
-#         env:
-#           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-#         run: |
-#           gh pr create --base ${{ matrix.base }} --head ${{ github.head_ref }} --title "Auto PR: ${{ github.head_ref }} → ${{ matrix.base }}" --body "Automatically created when a PR from hotfix to production is raised."
-#         # uses: peter-evans/create-pull-request@v3.10.1
-#         # with:
-#         #   token: ${{ secrets.HUB_TOKEN }}
-#         #   commit-message: "Auto PR from ${{ github.head_ref }} to ${{ matrix.base }}"
-#         #   title: "Automated PR from ${{ github.head_ref }} to ${{ matrix.base }}"
-#         #   body: "This PR was created automatically targeting ${{ matrix.base }}."
-#         #   branch: ${{ github.head_ref }}
-#         #   base: ${{ matrix.base }}
-# # jobs:
-# #   create-pr:
-# #     runs-on: ubuntu-latest
-# #     steps:
-# #       - name: Checkout code
-# #         uses: actions/checkout@v4
-
-# #       - name: Create Pull Request
-# #         uses: peter-evans/create-pull-request@v3.10.1
-# #         with:
-# #           token: ${{ secrets.HUB_TOKEN }}
-# #           commit-message: Auto Pull Request
-# #           title: Your desired title
-# #           body: Auto-created Pull Request
-# #           branch: ${{ github.ref }}
-# #           base: uat
-# # jobs:
-# #   create-pr:
-# #     runs-on: ubuntu-latest
-# #     permissions:
-# #       pull-requests: write
-# #     steps:
-# #       - name: Checkout repository
-# #         uses: actions/checkout@v3
-
-# #       - name: Create PR from hotfix to UAT
-# #         env:
-# #           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-# #         run: |
-# #           QA_PR_URL=$(gh pr create --base qa --head hotfix --title "Auto PR: Hotfix → QA" --body "Automatically created when a PR from hotfix to production is raised.")
-# #           QA_PR_NUMBER=$(basename "$QA_PR_URL")  # Extracts the PR number from the URL
-# #           echo "Created PR Number: $QA_PR_NUMBER"
-         
-# #       - name: Create PR from hotfix to QA
-# #         env:
-# #           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-# #         run: |
-# #           UAT_PR_URL=$(gh pr create --base uat --head hotfix --title "Auto PR: Hotfix → UAT" --body "Automatically created when a PR from hotfix to production is raised.")
-# #           UAT_PR_NUMBER=$(basename "$UAT_PR_URL")  # Extracts the PR number from the URL
-# #           echo "Created PR Number: $UAT_PR_NUMBER"
-          
-# #       - name: Set PR Numbers
-# #         run: echo '[$QA_PR_NUMBER, $UAT_PR_NUMBER]' > pr_numbers.json
-
-# #       - name: Upload Artifact
-# #         uses: actions/upload-artifact@v4
-# #         with:
-# #           name: pr numbers
-# #           path: pr_numbers.json
-          
-# #       - name: Download PR List
-# #         uses: actions/download-artifact@v4
-# #         with:
-# #           name: pr numbers
-  
-# #       - name: Read PR List
-# #         id: load-matrix
-# #         run: echo "MATRIX=$(jq -c . < pr_numbers.json)" >> $GITHUB_ENV  # Static list of PR numbers
-          
-# #     strategy:
-# #         matrix:
-# #           pr_number: ${{ fromJson(vars.MATRIX) }}    
-# #         steps:
-# #         - name: Auto-Approve PR
-# #           uses: hmarr/auto-approve-action@v4
-# #           with:
-# #             github-token: ${{ secrets.BOT_TOKEN }}
-# #             pull-request-number: ${{ matrix.pr_number }}
-#       # - name: Auto-Approve PRs
-#       #   run: |
-#       #     for PR in $PR_NUMBERS; do
-#       #       echo "Approving PR #$PR"
-#       #       gh pr review $PR --approve --body "Approved ✅ - Looks good to me!" --repo ${{ github.repository }}
-#       #     done
-#       #   env:
-#       #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-#       # - name: Auto-Approve PR
-#       #   uses: hmarr/auto-approve-action@v4
-#       #   with:
-#       #     token: ${{ secrets.BOT_TOKEN }}
-#       #     pull-request-number: ${{ github.event.inputs.pullRequestNumber }}
-# # name: Auto PR from Hotfix to UAT and QA
-
-# # on:
-# #   pull_request:
-# #     types:
-# #       - opened
-# #     branches:
-# #       - main
-
-# # jobs:
-# #   create-prs:
-# #     runs-on: ubuntu-latest
-# #     steps:
-# #       - name: Checkout repository
-# #         uses: actions/checkout@v3
-
-# #       - name: Get hotfix branch name
-# #         id: hotfix-branch
-# #         run: |
-# #           HOTFIX_BRANCH="${{ github.head_ref }}"
-# #           echo "Hotfix branch: $HOTFIX_BRANCH"
-# #           echo "::set-output name=hotfix_branch::$HOTFIX_BRANCH"
-
-# #       - name: Create PR to UAT
-# #         uses: peter-evans/create-pull-request@v4
-# #         with:
-# #           token: ${{ secrets.GITHUB_TOKEN }}
-# #           head: ${{ steps.hotfix-branch.outputs.hotfix_branch }}
-# #           base: uat
-# #           title: "Hotfix to UAT: ${{ steps.hotfix-branch.outputs.hotfix_branch }}"
-# #           body: "Automated PR from hotfix branch to UAT."
-# #           draft: false
