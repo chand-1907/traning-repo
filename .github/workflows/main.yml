@@ -55,7 +55,7 @@ jobs:
             TGT=$(echo "$row" | jq -r '.target')
 
             echo "Processing PR from $SRC to $TGT"
-            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SR → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
+            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
             PR_NUMBER=$(basename "$PR_URL")
             echo "PR_URL=$PR_URL"
             echo "PR_URL=$PR_URL" >> $GITHUB_ENV
@@ -69,11 +69,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pull-request-number: ${{ env.PR_NUMBER }}
           review-message: "Automatic Approved"
-      # - name: Auto Merge PR
-      #   #if: github.event.review.state == 'approved'
-      #   run: |
-      #     gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
-      #     echo "${{ github.event.review.state }}"
-      #   env:
-      #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-      #     PR_URL: ${{ env.PR_URL }}
+      - name: Auto Merge PR
+        if: github.event.review.state == 'approved'
+        run: |
+          gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
+          echo "${{ github.event.review.state }}"
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+          PR_URL: ${{ env.PR_URL }}
