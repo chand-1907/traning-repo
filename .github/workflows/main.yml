@@ -11,38 +11,27 @@ permissions:
   pull-requests: write
   
 jobs:
-  determine-base-branches:
+  create-pr:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    outputs:
-      base_branches: ${{ steps.set-matrix.outputs.base_branches }}
     steps:
-      - name: Set Matrix Based on Branch Type
-        id: set-matrix
+      - name: Set Base Branches
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-            echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_OUTPUT
+            echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-            echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_OUTPUT
+            echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           else
-            echo 'base_branches=[]' >> $GITHUB_OUTPUT
+            echo 'base_branches=[]' >> $GITHUB_ENV
           fi
-
-  create-pr:
-    if: github.event.pull_request.merged == true
-    needs: determine-base-branches
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        base: ${{ fromJson(needs.determine-base-branches.outputs.base_branches) }}
-    steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.base_ref }}
+          ref: ${{ github.head_ref }}
       - name: Check the values
         run: |
-          echo "${{ needs.determine-base-branches.outputs.base_branches }}"
+          echo "${{ env.base_branches }}"
           echo "${{ github.head_ref }}"
           echo "${{ github.base_ref }}"
       # - name: Check for Changes
@@ -61,7 +50,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          for row in $(echo '${{ needs.determine-base-branches.outputs.base_branches }}' | jq -c '.[]'); do
+          for row in $(echo '${{ env.base_branches }}' | jq -c '.[]'); do
             SRC=$(echo "$row" | jq -r '.source')
             TGT=$(echo "$row" | jq -r '.target')
 
