@@ -1,0 +1,26 @@
+name: from main
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for triggering'
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      # - name: Check the values
+      #   run: |
+      #     echo "${{ env.base_branches }}"
+      #     echo "${{ github.head_ref }}"
+      #     echo "${{ github.base_ref }}"

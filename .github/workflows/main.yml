@@ -11,7 +11,7 @@ permissions:
   pull-requests: write
   
 jobs:
-  create-pr:
+  condition-check:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
@@ -19,21 +19,31 @@ jobs:
         run: |
           echo "${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" == hotfix-prod ]]; then
-            echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
+            curl -X POST \
+            -H "Authorization: token ${{ secrets.HUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/from_main.yml/dispatches \
+            -d '{"ref": "main", "inputs": { "reason": "Triggered by main workflow" }}'
+            #echo 'base_branches=[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           elif [[ "${{ github.head_ref }}" == hotfix-uat ]]; then
-            echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
+            curl -X POST \
+            -H "Authorization: token ${{ secrets.HUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/from_uat.yml/dispatches \
+            -d '{"ref": "uat", "inputs": { "reason": "Triggered by main workflow" }}'
+            #echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           else
             echo 'base_branches=[]' >> $GITHUB_ENV
           fi
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-      - name: Check the values
-        run: |
-          echo "${{ env.base_branches }}"
-          echo "${{ github.head_ref }}"
-          echo "${{ github.base_ref }}"
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ github.head_ref }}
+      # - name: Check the values
+      #   run: |
+      #     echo "${{ env.base_branches }}"
+      #     echo "${{ github.head_ref }}"
+      #     echo "${{ github.base_ref }}"
       # - name: Check for Changes
       #   id: check-diff
       #   run: |
@@ -45,35 +55,35 @@ jobs:
       #       echo "Changes detected. Proceeding with PR creation."
       #       echo "changes_exist=true" >> $GITHUB_ENV
       #     fi
-      - name: Create Pull Request
-        #if: env.changes_exist == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-        run: |
-          for row in $(echo '${{ env.base_branches }}' | jq -c '.[]'); do
-            SRC=$(echo "$row" | jq -r '.source')
-            TGT=$(echo "$row" | jq -r '.target')
+      # - name: Create Pull Request
+      #   #if: env.changes_exist == 'true'
+      #   env:
+      #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+      #   run: |
+      #     for row in $(echo '${{ env.base_branches }}' | jq -c '.[]'); do
+      #       SRC=$(echo "$row" | jq -r '.source')
+      #       TGT=$(echo "$row" | jq -r '.target')
 
-            echo "Processing PR from $SRC to $TGT"
-            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
-            PR_NUMBER=$(basename "$PR_URL")
-            echo "PR_URL=$PR_URL"
-            echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-            echo "PR_NUMBER=$PR_NUMBER"
-            echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          done
-      - name: Auto Approve PR
-        if: success() && env.PR_NUMBER != ''
-        uses: hmarr/auto-approve-action@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request-number: ${{ env.PR_NUMBER }}
-          review-message: "Automatic Approved"
-      - name: Auto Merge PR
-        if: github.event.review.state == 'approved'
-        run: |
-          gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
-          echo "${{ github.event.review.state }}"
-        env:
-          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
-          PR_URL: ${{ env.PR_URL }}
+      #       echo "Processing PR from $SRC to $TGT"
+      #       PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
+      #       PR_NUMBER=$(basename "$PR_URL")
+      #       echo "PR_URL=$PR_URL"
+      #       echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+      #       echo "PR_NUMBER=$PR_NUMBER"
+      #       echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+      #     done
+      # - name: Auto Approve PR
+      #   if: success() && env.PR_NUMBER != ''
+      #   uses: hmarr/auto-approve-action@v4
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     pull-request-number: ${{ env.PR_NUMBER }}
+      #     review-message: "Automatic Approved"
+      # - name: Auto Merge PR
+      #   if: github.event.review.state == 'approved'
+      #   run: |
+      #     gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
+      #     echo "${{ github.event.review.state }}"
+      #   env:
+      #     GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+      #     PR_URL: ${{ env.PR_URL }}
