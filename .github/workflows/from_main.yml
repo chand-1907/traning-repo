@@ -32,7 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HUB_TOKEN }}
         run: |
-          PR_URL=$(gh pr create --base ${{ matrix.config.target }} --head ${{ matrix.config.source }} --title "Auto PR: ${{ matrix.config.source } → ${{ matrix.config.target }}" --body "Automatically created when a PR from hotfix to production is raised.")
+          PR_URL=$(gh pr create --base ${{ matrix.config.target }} --head ${{ matrix.config.source }} --title "Auto PR: ${{ matrix.config.source }} → ${{ matrix.config.target }}" --body "Automatically created when a PR from hotfix to production is raised.")
           PR_NUMBER=$(basename "$PR_URL")
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
