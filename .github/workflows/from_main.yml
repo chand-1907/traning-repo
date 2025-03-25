@@ -14,11 +14,26 @@ permissions:
 jobs:
   create:
     runs-on: ubuntu-latest
+    env:
+      base_names: '[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+      - name: Create Pull Request
+        #if: env.changes_exist == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+        run: |
+          for row in $(echo '${{ env.base_names }}' | jq -c '.[]'); do
+            SRC=$(echo "$row" | jq -r '.source')
+            TGT=$(echo "$row" | jq -r '.target')
+            echo "Processing PR from $SRC to $TGT"
+            PR_URL=$(gh pr create --base $TGT --head $SRC --title "Auto PR: $SRC → $TGT" --body "Automatically created when a PR from hotfix to production is raised.")
+            PR_APPROVAL=$(gh pr review "$PR_URL" --approve)
+            PR_MERGE=$(gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge")
+          done
       # - name: Check the values
       #   run: |
       #     echo "${{ env.base_branches }}"
