@@ -2,6 +2,10 @@ name: pr to uat
 
 on:
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for triggering'
+        required: true
 
 permissions:
   contents: write
