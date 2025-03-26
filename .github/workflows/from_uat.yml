@@ -1,0 +1,52 @@
+name: from uat
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for triggering'
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: [
+          { source: "uat", target: "qa" }
+        ]
+    # env:
+    #   base_names: '[{"source":"main","target":"uat"},{"source":"uat","target":"qa"}]'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Create Pull Request
+        #if: env.changes_exist == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+        run: |
+          PR_URL=$(gh pr create --base ${{ matrix.config.target }} --head ${{ matrix.config.source }} --title "Auto PR: ${{ matrix.config.source }} → ${{ matrix.config.target }}" --body "Automatically created when a PR from hotfix to production is raised.")
+          PR_NUMBER=$(basename "$PR_URL")
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+      - name: Auto Approve PR
+        if: success() && env.PR_NUMBER != ''
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ env.PR_NUMBER }}
+          review-message: "Automatic Approved"
+      - name: Auto Merge PR
+        if: github.event.review.state == 'Approved'
+        run: |
+          gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
+          echo "${{ github.event.review.state }}"
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+          PR_URL: ${{ env.PR_URL }}
