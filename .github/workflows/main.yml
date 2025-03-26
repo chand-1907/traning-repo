@@ -5,6 +5,7 @@ on:
       - closed
     branches:
       - main
+      - uat
 
 permissions:
   contents: write
