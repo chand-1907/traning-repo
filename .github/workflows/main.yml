@@ -31,7 +31,7 @@ jobs:
             -H "Authorization: token ${{ secrets.HUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/pr_to_qa.yml/dispatches \
-            -d '{"ref": "uat", "inputs": { "reason": "Triggered by main workflow" }}'
+            -d '{"ref": "uat", "inputs": { "reason": "Triggered by uat workflow" }}'
             #echo 'base_branches=[{"source":"uat","target":"qa"}]' >> $GITHUB_ENV
           else
             echo 'base_branches=[]' >> $GITHUB_ENV
