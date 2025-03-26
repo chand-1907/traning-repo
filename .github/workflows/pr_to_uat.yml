@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for triggering'
+        description: 'Raise an automated PR to UAT from main'
         required: true
 
 permissions:
@@ -35,16 +35,31 @@ jobs:
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
 
       - name: Auto Approve PR
-        id: uat-pr
+        id: uat-pr-approve
         if: success() && env.PR_NUMBER != ''
         uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pull-request-number: ${{ env.PR_NUMBER }}
           review-message: "Automatic Approved"
+
+      - name: Auto Merge PR
+        id: uat-pr-merge
+        if: steps.uat-pr-approve.outcome == 'success'
+        run: |
+          gh pr merge "$PR_URL" --auto --squash || echo "auto merge failed, need manual review and merge"
+          echo "${{ github.event.review.state }}"
+        env:
+          GH_TOKEN: ${{ secrets.HUB_TOKEN }}
+          PR_URL: ${{ env.PR_URL }}
     
       - name: Trigger the PR to QA
-        if: steps.uat-pr.outcome == 'success'
+        if: steps.uat-pr-merge.outcome == 'success'
         run: |
           echo ${{ steps.uat-pr.outcome }}
           echo "triggering qa pr"
+          curl -X POST \
+          -H "Authorization: token ${{ secrets.HUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/actions/workflows/pr_to_qa.yml/dispatches \
+          -d '{"ref": "uat", "inputs": { "reason": "Triggered by main workflow" }}'
